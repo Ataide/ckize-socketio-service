@@ -4,7 +4,7 @@ var server = require('http').createServer(),
     port   = 7000;
 
 
-// Logger config
+// Logger config - Ataide Bastos
 logger.remove(logger.transports.Console);
 logger.add(logger.transports.Console, { colorize: true, timestamp: true });
 logger.info('SocketIO > listening on port ' + port);
@@ -13,25 +13,11 @@ var clients = {};
 
 io.on('connection', function (socket){
 
-    //Regiter a client based on userid
+    //Regiter a client socket based on userId
     socket.on('register', function(data)
     {
-        if (clients[data.userId] && clients[data.userId].sockets instanceof Array)
-        {
-            //if user is already registered
-            //with one or many socket clients,
-            //just push socket id to array of sockets
-            clients[data.userId].sockets.push(socket.id);
-
-        } else
-        {
-            //if it is the first socket client
-            //add an array and push socket id
-            clients[data.userId] = { sockets: []};
-
-            clients[data.userId].sockets.push(socket.id);
-        }
-
+        clients[data.userId] = { sockets: []};
+        clients[data.userId].sockets.push(socket.id);
         logger.info('SocketIO > New connection -> userId = ' + data.userId +' socketId = ' + socket.id);
 
     });
@@ -42,8 +28,6 @@ io.on('connection', function (socket){
     });
 
     socket.on('broadcast', function (data) {
-
-        //when LAMP server broadcast look for user in list of clients
         if(clients[data.userId])
         {
             for(var soct in clients[data.userId].sockets){
@@ -63,16 +47,13 @@ io.on('connection', function (socket){
 
     socket.on('disconnect', function () {
 
-        //when socket  disconnects remove socket from list of sockets
+
         for(var name in clients){
-
             for (var soct in clients[name].sockets){
-
                 if(clients[name].sockets[soct] === socket.id)
                 {
                     //remove socket from array of sockets
                     clients[name].sockets.splice(soct, 1);
-
                     logger.info('socket removed');
 
                     //if no more sockets are connected
@@ -85,13 +66,8 @@ io.on('connection', function (socket){
                     }
                     break;
                 }
-
-
             }
-
-
         }
-
     });
 
 });
